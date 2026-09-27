@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{title}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1 data-title></h1>
+    <p class="sub">교내 술래잡기 챌린지</p>
+  </header>
+  <main class="wrap">
+    <section id="status" class="card"></section>
+
+    <section class="card">
+      <h2>내 뽑기권</h2>
+      <ul id="tickets" class="tickets"></ul>
+    </section>
+
+    <section class="card">
+      <h2>어떻게 하나요?</h2>
+      <ol id="rules">
+        <li>라운드가 시작되면 힌트 사진과 대략적인 위치가 올라와요.</li>
+        <li>힌트를 보고 도망자를 찾아가세요. 뛰지 말고, 몸은 잡지 마세요.</li>
+        <li>찾으면 도망자 등에 붙은 QR을 폰 카메라로 찍으세요.</li>
+        <li>뽑기권으로 상품을 뽑고, 보상 부스에서 교환 코드를 보여 주세요.</li>
+      </ol>
+      <p class="muted">라운드마다 한 사람당 뽑기권 1장이에요.</p>
+    </section>
+  </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script type="module" src="js/index.js"></script>
+</body>
+</html>

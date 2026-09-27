@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>보상 부스 · {title}</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1 data-title></h1>
+    <p class="sub">보상 부스 · 운영자 화면</p>
+  </header>
+  <main class="wrap" id="app"></main>
+
+  <template id="page">
+    <section class="card">
+      <h2>라운드</h2>
+      <p id="round-status"></p>
+      <div class="row">
+        <button class="btn" id="prepare-btn">새 라운드 준비</button>
+        <button class="btn secondary" id="end-btn">라운드 종료</button>
+      </div>
+      <div id="qr-wrap" hidden>
+        <div class="qr-box">
+          <div id="qr"></div>
+          <p class="qr-url" id="qr-url"></p>
+        </div>
+        <button class="btn secondary" id="print-btn">등에 붙일 QR 인쇄</button>
+        <p class="muted">라운드마다 새 QR을 인쇄해 붙여 주세요. 지난 라운드 QR은 쓸 수 없어요.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>상품 교환</h2>
+      <form id="redeem-form" class="row">
+        <input id="redeem-code" placeholder="교환 코드 5자리" maxlength="5" autocomplete="off">
+        <button class="btn" style="flex: 0 0 auto; width: auto; margin-top: 6px">조회</button>
+      </form>
+      <div id="redeem-result"></div>
+    </section>
+
+    <section class="card">
+      <h2>이번 라운드 기록</h2>
+      <table>
+        <thead><tr><th>닉네임</th><th>코드</th><th>상품</th><th>수령</th></tr></thead>
+        <tbody id="ticket-rows"></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>상품 재고</h2>
+      <table>
+        <thead><tr><th>상품</th><th>남은 수량</th><th>가중치</th><th></th></tr></thead>
+        <tbody id="prize-rows"></tbody>
+      </table>
+      <p class="muted">가중치가 클수록 잘 나와요. 남은 수량이 0이면 안 나와요.</p>
+      <div class="row">
+        <button class="btn secondary" id="add-prize">상품 추가</button>
+        <button class="btn" id="save-prizes">저장</button>
+      </div>
+      <p class="muted" id="prize-msg"></p>
+    </section>
+
+    <section class="card">
+      <h2>테스트용</h2>
+      <p class="muted">
+        <a href="index.html" target="_blank">참가자 화면</a> ·
+        <a href="runner.html" target="_blank">도망자 화면</a> ·
+        <a id="claim-link" target="_blank">QR 찍은 척하기</a>
+      </p>
+      <button class="btn secondary" id="reset-btn">모든 데이터 초기화</button>
+    </section>
+  </template>
+
+  <div id="print-area">
+    <h1 data-title></h1>
+    <p id="print-round"></p>
+    <div id="print-qr"></div>
+    <p>찾았다면 이 QR을 찍으세요!</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" src="js/booth.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// Firebase 콘솔 > Firestore Database > 규칙 탭에 이 내용을 통째로 붙여넣고 "게시"를 누른다.
+// 아래 CHANGE_ME_SHA256만 개발자 비밀번호의 SHA-256 값으로 바꾸면 된다.
+// 이 파일은 공개되니 실제 값은 콘솔에만 넣는다.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 운영자 = 개발자 비밀번호를 맞혀서 staff/{uid} 문서를 만든 기기
+    function isStaff() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/staff/$(request.auth.uid));
+    }
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function gamePath() {
+      return /databases/$(database)/documents/game/current;
+    }
+
+    // 한 사람이 한 라운드에 받은 뽑기권 표시. 문서 id = 라운드_uid
+    function claimPath(roundId) {
+      return /databases/$(database)/documents/claims/$(roundId + '_' + request.auth.uid);
+    }
+
+    function prizePath(prizeId) {
+      return /databases/$(database)/documents/prizes/$(prizeId);
+    }
+
+    function ticketPath(code) {
+      return /databases/$(database)/documents/tickets/$(code);
+    }
+
+    // 운영자 등록: 비밀번호의 SHA-256(소문자 16진수)이 맞을 때만 자기 uid 문서를 만들 수 있다
+    match /staff/{uid} {
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['pw'])
+        && request.resource.data.pw is string
+        && hashing.sha256(request.resource.data.pw).toHexString().lower() == 'CHANGE_ME_SHA256';
+      allow read, delete: if false;
+    }
+
+    // 게임 상태: 누구나 읽음. 참가자는 뽑기권 받을 때 claimed를 1 올리는 것만 가능
+    match /game/current {
+      allow read: if true;
+      allow create, delete: if isStaff();
+      allow update: if isStaff() || (
+        signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['claimed'])
+        && request.resource.data.claimed == resource.data.claimed + 1
+        && request.resource.data.claimed <= resource.data.maxTickets
+        && existsAfter(claimPath(resource.data.roundId))
+        && !exists(claimPath(resource.data.roundId))
+      );
+    }
+
+    // 힌트 사진과 흐린 위치: 누구나 읽음, 운영자만 씀
+    match /hint/current {
+      allow read: if true;
+      allow write: if isStaff();
+    }
+
+    // 라운드별 QR 비밀값: 운영자만 읽고 씀
+    match /roundKeys/{roundId} {
+      allow read, write: if isStaff();
+    }
+
+    // 받음 표시: QR 비밀값이 맞고, 라운드 진행 중이고, claimed가 같이 1 올라갈 때만 생성
+    match /claims/{claimId} {
+      allow get: if signedIn() && (resource == null || resource.data.uid == request.auth.uid);
+      allow list, delete: if isStaff();
+      allow create: if signedIn()
+        && claimId == request.resource.data.roundId + '_' + request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.key
+             == get(/databases/$(database)/documents/roundKeys/$(request.resource.data.roundId)).data.key
+        && get(gamePath()).data.status == 'live'
+        && get(gamePath()).data.roundId == request.resource.data.roundId
+        && request.time.toMillis() < get(gamePath()).data.endsAt
+        && getAfter(gamePath()).data.claimed == get(gamePath()).data.claimed + 1;
+    }
+
+    // 뽑기권: 받음 표시와 같이 생성. 주인은 뽑기 결과만 한 번 쓸 수 있고, 지급 처리는 운영자만
+    match /tickets/{code} {
+      allow get: if isStaff()
+        || (signedIn() && (resource == null || resource.data.uid == request.auth.uid));
+      allow list: if isStaff() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn()
+        && request.resource.data.code == code
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() <= 12
+        && request.resource.data.prizeId == null
+        && request.resource.data.redeemed == false
+        && getAfter(claimPath(request.resource.data.roundId)).data.code == code
+        && !exists(claimPath(request.resource.data.roundId));
+      allow update: if isStaff() || (
+        signedIn()
+        && resource.data.uid == request.auth.uid
+        && resource.data.prizeId == null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['prizeId', 'prizeName', 'drawnAt'])
+        && request.resource.data.prizeName == get(prizePath(request.resource.data.prizeId)).data.name
+        && getAfter(prizePath(request.resource.data.prizeId)).data.stock
+             == get(prizePath(request.resource.data.prizeId)).data.stock - 1
+      );
+      allow delete: if isStaff();
+    }
+
+    // 상품: 참가자는 자기 뽑기권으로 뽑을 때 재고를 1 줄이는 것만 가능
+    match /prizes/{prizeId} {
+      allow read: if signedIn();
+      allow create, delete: if isStaff();
+      allow update: if isStaff() || (
+        signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastTicket'])
+        && request.resource.data.stock == resource.data.stock - 1
+        && request.resource.data.stock >= 0
+        && get(ticketPath(request.resource.data.lastTicket)).data.uid == request.auth.uid
+        && get(ticketPath(request.resource.data.lastTicket)).data.prizeId == null
+        && getAfter(ticketPath(request.resource.data.lastTicket)).data.prizeId == prizeId
+      );
+    }
+  }
+}
