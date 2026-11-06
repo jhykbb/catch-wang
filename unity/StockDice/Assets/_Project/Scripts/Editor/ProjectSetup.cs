@@ -64,6 +64,31 @@ namespace StockDice.EditorTools
             EnsureBaseMaterial(true);
         }
 
+        /// <summary>
+        /// 배치 모드 진입점: -batchmode -quit -executeMethod StockDice.EditorTools.ProjectSetup.BatchSetup
+        /// delayCall 은 -quit 으로 끝나기 전에 돌지 않으므로 URP, 재질, 씬 준비를 여기서 직접 한다.
+        /// </summary>
+        public static void BatchSetup()
+        {
+            if (GraphicsSettings.currentRenderPipeline == null) TrySetupUrp();
+            EnsureBaseMaterial(true);
+            if (!File.Exists(ScenePath)) CreateMainScene(true);
+            AssetDatabase.SaveAssets();
+
+            bool ok = GraphicsSettings.currentRenderPipeline != null
+                      && AssetDatabase.LoadAssetAtPath<Material>(MaterialPath) != null
+                      && File.Exists(ScenePath);
+            if (!ok)
+            {
+                Debug.LogError("[StockDice] 배치 설정 실패: 파이프라인=" + GraphicsSettings.currentRenderPipeline
+                               + ", 재질=" + AssetDatabase.LoadAssetAtPath<Material>(MaterialPath)
+                               + ", 씬=" + File.Exists(ScenePath));
+                EditorApplication.Exit(1);
+                return;
+            }
+            Debug.Log("[StockDice] 배치 설정 완료: " + GraphicsSettings.currentRenderPipeline.name);
+        }
+
         private static void CreateMainScene(bool openAsSingle)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));

@@ -18,9 +18,10 @@
 ### 방법 B: 이 폴더를 그대로 열기
 
 1. Unity Hub → Add → Add project from disk → `unity/StockDice` 선택 (에디터 버전이 다르면 Hub가 맞춰서 열어 준다).
-2. 처음 열면 URP 패키지는 설치되지만 파이프라인 에셋이 없어서 **Built-in 렌더러로 동작**한다. 게임은 정상으로 돌아가고 포스트 프로세싱만 빠진다.
-3. URP로 보려면 메뉴 **StockDice → URP 렌더 파이프라인 자동 설정 (실험적)**을 누른다.
+2. URP 파이프라인 에셋(`Assets/_Project/Settings/StockDice_URP.asset`)과 `Assets/_Project/Scenes/Main.unity`가 저장소에 들어 있다. Main 씬을 열고 **Play**.
+3. 파이프라인 에셋을 다시 만들어야 하면 지정을 비운 뒤 메뉴 **StockDice → URP 렌더 파이프라인 자동 설정 (실험적)**을 누른다.
    실패하면 `Assets > Create > Rendering > URP Asset (with Universal Renderer)`로 에셋을 만들어 `Project Settings > Graphics`에 지정하고, **StockDice → 기본 재질 다시 만들기**를 누른다.
+   배치 모드에서는 `-batchmode -quit -executeMethod StockDice.EditorTools.ProjectSetup.BatchSetup`으로 같은 준비를 한다.
 
 > 처음 열면 `.meta` 파일과 `ProjectSettings/*.asset`이 생긴다. 이 파일들도 커밋한다.
 > (`Library/`, `Temp/`, `Logs/`, `UserSettings/`는 `.gitignore`로 제외)
@@ -111,5 +112,5 @@ cd tools/Simulator && dotnet run -c Release -- --games 3000 --out ../../game-des
 
 - 이 코드는 Unity 에디터가 없는 환경에서 작성했다.
   - 게임 로직(Core)은 .NET에서 규칙 테스트 25개와 시뮬레이션 수만 판으로 검증했다.
-  - 화면 코드(View, Editor)는 Unity 2021.3 참조 어셈블리로 **컴파일만** 확인했다 (오류 0, 경고 0). Unity 6에서 실제로 돌려 보면 배치나 연출 타이밍을 다듬어야 할 수 있다.
-- URP 포스트 프로세싱(`UrpSetup.cs`)은 URP 패키지가 있을 때만 컴파일되는 코드라서 위 컴파일 확인에 포함되지 않았다.
+- Unity 6000.0.58f1 배치 모드에서 URP 코드 경로(`STOCKDICE_URP`)까지 전부 컴파일했고 (오류 0, 경고 0), EditMode 테스트 25개가 통과했다.
+- 화면 코드(View)는 Play 모드로 돌려 보기 전이다. 실행해 보면 배치나 연출 타이밍을 다듬어야 할 수 있다.
