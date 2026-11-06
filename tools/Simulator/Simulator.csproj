@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Unity 프로젝트의 순수 C# 로직(Core)을 그대로 가져다 컴파일한다. 복사본 없음. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>StockDice.Simulator</RootNamespace>
+    <AssemblyName>StockDice.Simulator</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/StockDice/Assets/_Project/Scripts/Core/**/*.cs" LinkBase="Core" />
+  </ItemGroup>
+</Project>
